@@ -15,6 +15,8 @@ module Kafka
       12 => :heartbeat,
       13 => :leave_group,
       14 => :sync_group,
+      15 => :describe_groups,
+      16 => :list_groups,
     }
 
     ERRORS = {
@@ -41,6 +43,10 @@ module Kafka
       25 => UnknownMemberId,
       26 => InvalidSessionTimeout,
       27 => RebalanceInProgress,
+      28 => InvalidCommitOffsetSizeCode,
+      29 => TopicAuthorizationFailedCode,
+      30 => GroupAuthorizationFailedCode,
+      31 => ClusterAuthorizationFailedCode,
     }
 
     def self.handle_error(error_code)
@@ -49,7 +55,7 @@ module Kafka
       elsif error = ERRORS[error_code]
         raise error
       else
-        raise UnknownError, "Unknown error with code #{error_code}"
+        raise UnknownError, 'Unknown error with code #{error_code}'
       end
     end
 
@@ -59,25 +65,29 @@ module Kafka
   end
 end
 
-require "kafka/protocol/topic_metadata_request"
-require "kafka/protocol/metadata_response"
-require "kafka/protocol/produce_request"
-require "kafka/protocol/produce_response"
-require "kafka/protocol/fetch_request"
-require "kafka/protocol/fetch_response"
-require "kafka/protocol/list_offset_request"
-require "kafka/protocol/list_offset_response"
-require "kafka/protocol/group_coordinator_request"
-require "kafka/protocol/group_coordinator_response"
-require "kafka/protocol/join_group_request"
-require "kafka/protocol/join_group_response"
-require "kafka/protocol/sync_group_request"
-require "kafka/protocol/sync_group_response"
-require "kafka/protocol/leave_group_request"
-require "kafka/protocol/leave_group_response"
-require "kafka/protocol/heartbeat_request"
-require "kafka/protocol/heartbeat_response"
-require "kafka/protocol/offset_fetch_request"
-require "kafka/protocol/offset_fetch_response"
-require "kafka/protocol/offset_commit_request"
-require "kafka/protocol/offset_commit_response"
+require 'kafka/protocol/topic_metadata_request'
+require 'kafka/protocol/metadata_response'
+require 'kafka/protocol/produce_request'
+require 'kafka/protocol/produce_response'
+require 'kafka/protocol/fetch_request'
+require 'kafka/protocol/fetch_response'
+require 'kafka/protocol/list_offset_request'
+require 'kafka/protocol/list_offset_response'
+require 'kafka/protocol/group_coordinator_request'
+require 'kafka/protocol/group_coordinator_response'
+require 'kafka/protocol/join_group_request'
+require 'kafka/protocol/join_group_response'
+require 'kafka/protocol/sync_group_request'
+require 'kafka/protocol/sync_group_response'
+require 'kafka/protocol/leave_group_request'
+require 'kafka/protocol/leave_group_response'
+require 'kafka/protocol/heartbeat_request'
+require 'kafka/protocol/heartbeat_response'
+require 'kafka/protocol/offset_fetch_request'
+require 'kafka/protocol/offset_fetch_response'
+require 'kafka/protocol/offset_commit_request'
+require 'kafka/protocol/offset_commit_response'
+require 'kafka/protocol/describe_groups_request'
+require 'kafka/protocol/describe_groups_response'
+require 'kafka/protocol/list_groups_request'
+require 'kafka/protocol/list_groups_response'

@@ -31,11 +31,11 @@ describe "Producer API", functional: true do
 
     message = kafka.fetch_messages(topic: topic, partition: 0, offset: 0).first
 
-    expect(message.value).to eq "yolo"
-    expect(message.key).to eq "xoxo"
+    expect(message.value).to eq 'yolo'
+    expect(message.key).to eq 'xoxo'
   end
 
-  example "enumerating the messages in a topic" do
+  example 'enumerating the messages in a topic' do
     values = (1..10).to_a
 
     values.each do |value|
@@ -46,9 +46,9 @@ describe "Producer API", functional: true do
       value = Integer(message.value)
       values.delete(value)
 
-      if message.value == "5"
+      if message.value == '5'
         values << 666
-        kafka.deliver_message("666", topic: topic)
+        kafka.deliver_message('666', topic: topic)
       end
 
       break if values.empty?
@@ -57,14 +57,66 @@ describe "Producer API", functional: true do
     expect(values).to eq []
   end
 
-  example "getting the last offset for a topic partition" do
+  example 'getting the last offset for a topic partition' do
     topic = create_random_topic(num_partitions: 1, num_replicas: 1)
 
-    kafka.deliver_message("hello", topic: topic, partition: 0)
-    kafka.deliver_message("world", topic: topic, partition: 0)
+    kafka.deliver_message('hello', topic: topic, partition: 0)
+    kafka.deliver_message('world', topic: topic, partition: 0)
 
     offset = kafka.last_offset_for(topic, 0)
 
     expect(offset).to eq 1
+  end
+
+  example 'fetch a list of consumer groups in a cluster' do
+    producer = kafka.producer
+    producer.produce(1.to_s, topic: topic, partition_key: 1.to_s)
+    producer.deliver_messages
+
+    consumer_1 = kafka.consumer(group_id: 'consumer_1')
+    consumer_1.subscribe(topic)
+    c1 = Thread.new do
+      consumer_1.each_message do |message|
+      end
+    end
+
+    consumer_2 = kafka.consumer(group_id: 'consumer_2')
+    consumer_2.subscribe(topic)
+    c2 = Thread.new do
+      consumer_2.each_message do |message|
+      end
+    end
+
+    sleep(10) # give some time for the consumers to register
+    expect(kafka.list_groups.length).to eq 2
+
+    consumer_1.stop
+    consumer_2.stop
+  end
+
+  example 'fetch a description of of a specific group in a cluster' do
+    producer = kafka.producer
+    producer.produce(1.to_s, topic: topic, partition_key: 1.to_s)
+    producer.deliver_messages
+
+    consumer_1 = kafka.consumer(group_id: 'consumer_1')
+    consumer_1.subscribe(topic)
+    c1 = Thread.new do
+      consumer_1.each_message do |message|
+      end
+    end
+
+    consumer_2 = kafka.consumer(group_id: 'consumer_2')
+    consumer_2.subscribe(topic)
+    c2 = Thread.new do
+     consumer_2.each_message do |message|
+     end
+    end
+
+    sleep(10) # give some time for the consumers to register
+    expect(kafka.describe_groups(['consumer_1', 'consumer_2']).length).to eq 2
+
+    consumer_1.stop
+    consumer_2.stop
   end
 end
